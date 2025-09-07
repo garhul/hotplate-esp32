@@ -1,0 +1,30 @@
+{
+  "profiles": [
+    {
+      "name": "test_profile",
+      "solder": "sncoso",
+      "profile": {
+        "soak": {
+          "enabled": true,
+          "time": 60,
+          "temp": 150
+        },
+        "ramp": {
+          "enabled": true,
+          "time": 30,
+          "temp": 200
+        },
+        "reflow": {
+          "enabled": true,
+          "time": 90,
+          "temp": 250
+        },
+        "cooldown": {
+          "enabled": true,
+          "time": 120,
+          "temp": 100
+        }
+      }
+    }
+  ]
+}
