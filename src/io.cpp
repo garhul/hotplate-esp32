@@ -3,8 +3,10 @@
 namespace IO {
   ADS1115 ADS(0x48);
   btnState currentBtnState = { false, false, false, false };
+  btnState oldBtnState = { false, false, false, false };
   int16_t targetTemp = 0;
   int16_t currentTemp = 0;
+  void (*btnListener)(btnState newState) = nullptr;
 
   bool errorFlag = false;
   String errorMessage = "";
@@ -17,11 +19,19 @@ namespace IO {
     }
 
     last_isr_time = millis();
+    oldBtnState = currentBtnState;
 
-    currentBtnState.a = digitalRead(BTN_A);
-    currentBtnState.b = digitalRead(BTN_B);
-    currentBtnState.c = digitalRead(BTN_C);
-    currentBtnState.d = digitalRead(BTN_D);
+    currentBtnState.down = digitalRead(BTN_A);
+    currentBtnState.back = digitalRead(BTN_B);
+    currentBtnState.ok = digitalRead(BTN_C);
+    currentBtnState.up = digitalRead(BTN_D);
+
+
+    if (currentBtnState.get() != oldBtnState.get()) {
+      if (btnListener != nullptr) {
+        btnListener(currentBtnState);
+      }
+    }
   }
 
 
@@ -51,10 +61,6 @@ namespace IO {
   }
 
 
-  inline void _updateHeater() {
-
-  }
-
   inline void _readTemp() {
     int16_t t0 = ADS.readADC(2);
     int16_t t1 = ADS.readADC(3);
@@ -70,8 +76,6 @@ namespace IO {
   void update() {
     // Update button states or other IO operations
     _readTemp();
-    _updateHeater();
-
   }
 
 
@@ -102,5 +106,16 @@ namespace IO {
     return currentBtnState;
   }
 
+  void heaterOn() {
+    digitalWrite(HEATER_PIN, LOW);
+  }
+
+  void heaterOff() {
+    digitalWrite(HEATER_PIN, HIGH);
+  }
+
+  void onBtnStateChange(void (*callback)(btnState newState)) {
+    btnListener = callback;
+  }
 
 }

@@ -2,13 +2,14 @@
 
 #include <Arduino.h>
 #include "ADS1X15.h"
-#define BTN_A 9
-#define BTN_B 10
-#define BTN_C 20
-#define BTN_D 21
 
-#define FAN_PIN 1
-#define HEATER_PIN 0
+#define BTN_A 4
+#define BTN_B 1
+#define BTN_C 10
+#define BTN_D 9
+
+#define FAN_PIN 12
+#define HEATER_PIN 11
 
 #define I2C_SDA 2
 #define I2C_SCL 3
@@ -18,18 +19,28 @@
 
 namespace IO {
   struct btnState {
-    bool a;
-    bool b;
-    bool c;
-    bool d;
+    bool down;
+    bool back;
+    bool ok;
+    bool up;
+    uint8_t get() {
+      return (down ? 0 : 1) | (back ? 0 : 2) | (ok ? 0 : 4) | (up ? 0 : 8);
+    }
   };
 
   void init();
   void update();
+
   btnState getButtonState();
-  void setTargetTemp(uint16_t temp);
+
+  void onBtnStateChange(void (*callback)(btnState newState));
+
   uint16_t getTemp();
+
   void fanOn();
   void fanOff();
+
+  void heaterOn();
+  void heaterOff();
 
 }

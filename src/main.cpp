@@ -1,25 +1,21 @@
 #include <Arduino.h>
-
-//configured in user_setup.h under its own folder
-#include "io.h"
-#include "screens.h"
-
+//NOTE TFT is configured in user_setup.h under its own folder
+#include "controller.h"
 
 
 void setup() {
   Serial.begin(460800);
-  printf("Setup started.");
-  IO::init();
-  MODES::init();
-  // Initialize I2C with specified SDA and SCL pins and frequency
+  delay(1000);
+
+  Controller::init();
   Serial.println("Setup complete.");
+
+  Profiles::Profile profiles[10];
+  Profiles::getProfilesList(profiles, Profiles::profileCount);
 }
 
 
-
-
 void loop() {
-  IO::update();
-  MODES::update(IO::getButtonState());
+  Controller::update();
   delay(10);
 }
