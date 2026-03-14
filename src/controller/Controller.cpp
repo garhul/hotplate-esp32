@@ -88,7 +88,7 @@
 //       const float ki = 0.02f;
 //       const float kd = 2.0f;
 
-//       const float error = static_cast<float>(state.tempTarget) - static_cast<float>(state.tempCurrent);
+//       const float error = static_cast<float>(state.tempTarget) - static_cast<float>(state.currentTemp);
 //       integral += error;
 //       const float derivative = error - lastError;
 //       lastError = error;
@@ -125,7 +125,7 @@
 //   void update(Model::SystemState& state, uint32_t dtMs) {
 
 //     state.buttons = IO::getButtonState();
-//     state.tempCurrent = IO::getTemp();
+//     state.currentTemp = IO::getTemp();
 
 //     state.error = IO::getErrorFlag();
 //     state.errorMessage = IO::getErrorMessage();

@@ -8,14 +8,25 @@
 
 namespace Controller {
   extern SystemState::State* state;
+  extern uint32_t lastUpdate;
+  extern uint32_t lastModeChangeTime;
+  extern SystemState::Modes lastMode; //track mode changes for button handler attachment and display updates
 
   void init();
   void update();
+  inline void handleMode(bool modeChanged);
+  inline void attachUserInputHandlers();
+  inline void switchMode(SystemState::Modes newMode);
 
-
-  void menu();
-  void serviceMenu();
-  void serviceProfileSelection();
+  void startupHandler();
+  void bindMenuButtons();
+  void bindProfileSelectionButtons();
+  void bindTempSetButtons();
+  void bindHeatingButtons();
+  /// maybe..
+  void pidTuningHandler();
+  void profileRunningHandler();
+  void pausedHandler();
   // void profileSelectionControllerCycle(Model::SystemState& state);
 
 }

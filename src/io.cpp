@@ -12,20 +12,19 @@ namespace IO {
   String errorMessage = "";
 
   IRAM_ATTR void btn_isr() {
-    static uint32_t last_isr_time = millis();
+    // static uint32_t last_isr_time = millis();
 
-    if (millis() - last_isr_time < 50) { // Debounce time
-      return;
-    }
+    // if (millis() - last_isr_time < 10) { // Debounce time
+    //   return;
+    // }
 
-    last_isr_time = millis();
+    // last_isr_time = millis();
     oldBtnState = currentBtnState;
 
     currentBtnState.down = digitalRead(BTN_A);
     currentBtnState.back = digitalRead(BTN_B);
     currentBtnState.ok = digitalRead(BTN_C);
     currentBtnState.up = digitalRead(BTN_D);
-
 
     if (currentBtnState.get() != oldBtnState.get()) {
       if (btnListener != nullptr) {
@@ -47,7 +46,6 @@ namespace IO {
     digitalWrite(FAN_PIN, LOW);
     digitalWrite(HEATER_PIN, LOW);
 
-
     Wire.begin(I2C_SDA, I2C_SCL);
     ADS.begin();
     ADS.setGain(0); // Set gain to 0 for full range
@@ -58,10 +56,16 @@ namespace IO {
     attachInterrupt(BTN_C, btn_isr, CHANGE);
     attachInterrupt(BTN_D, btn_isr, CHANGE);
 
+
   }
 
-
   inline void _readTemp() {
+    static uint32_t lastReadTime = 0;
+
+    if (millis() - lastReadTime < 100) { // Read every 100ms
+      return;
+    }
+
     int16_t t0 = ADS.readADC(2);
     int16_t t1 = ADS.readADC(3);
 
@@ -71,13 +75,40 @@ namespace IO {
       Serial.println(errorMessage);
       return;
     }
+
+    if (t0 < 5 || t1 < 5) {
+      errorFlag = true;
+      errorMessage = "Invalid temperature reading!";
+      Serial.println(errorMessage);
+      return;
+    }
+
+    if (t0 > 4095 || t1 > 4095) {
+      errorFlag = true;
+      errorMessage = "Temperature reading out of range!";
+      Serial.println(errorMessage);
+      return;
+    }
+
+    currentTemp = abs(t0 + t1) / 2;
+
+    Serial.println("Raw ADC values: " + String(t0) + ", " + String(t1));
+  }
+
+
+  inline void _updatePid() {
+    // Simple on/off control for demonstration
+    if (currentTemp < targetTemp) {
+      heaterOn();
+    } else if (currentTemp > targetTemp) {
+      heaterOff();
+    }
   }
 
   void update() {
-    // Update button states or other IO operations
     _readTemp();
+    _updatePid();
   }
-
 
   void setTargetTemp(uint16_t temp) {
     if (temp > MAX_TEMP) {
@@ -94,6 +125,11 @@ namespace IO {
     return currentTemp;
   }
 
+  void safeMode() {
+    fanOff();
+    heaterOff();
+  }
+
   void fanOn(uint8_t speed) {
     analogWrite(FAN_PIN, speed);
   }
@@ -107,11 +143,11 @@ namespace IO {
   }
 
   void heaterOn() {
-    digitalWrite(HEATER_PIN, LOW);
+    digitalWrite(HEATER_PIN, HIGH);
   }
 
   void heaterOff() {
-    digitalWrite(HEATER_PIN, HIGH);
+    digitalWrite(HEATER_PIN, LOW);
   }
 
   void onBtnStateChange(void (*callback)(btnState newState)) {

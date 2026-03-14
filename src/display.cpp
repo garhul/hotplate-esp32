@@ -1,16 +1,18 @@
 #include <display.h>
 
-// Define the static member variables
 namespace Display {
   TFT_eSPI _tft;
   uint16_t colors[] = { TFT_RED, TFT_GREEN, TFT_BLUE, TFT_CYAN, TFT_MAGENTA, TFT_YELLOW, TFT_WHITE, TFT_ORANGE, TFT_DARKGREY, TFT_DARKCYAN, TFT_BROWN, TFT_DARKGREEN };
 }
+
 inline void drawTitle(TFT_eSPI* tft, const char* title) {
   tft->setTextSize(2);
+  tft->setTextFont(1);
   tft->setTextColor(TFT_DARKGREY, TFT_BLACK);
   tft->setCursor((tft->width() - tft->textWidth(title)) / 2, 5);
   tft->print(title);
 }
+
 void Display::init() {
   _tft.init();
   _tft.setRotation(1);
@@ -65,13 +67,6 @@ void Display::drawMenu(SystemState::State st, bool firstFrame) {
 
   }
 }
-
-// inline void drawTempChart(TFT_eSPI* tft, uint8_t values[]) {
-
-// }
-
-
-
 
 inline void drawProfile(TFT_eSPI* tft, Profiles::Profile* profile) {
   uint16_t color = tft->color565(90, 60, 0);
@@ -160,16 +155,59 @@ void Display::drawProfileSelection(SystemState::State st, bool firstFrame) {
   }
 }
 
-
-void Display::update(SystemState::State st) {
-  static SystemState::Modes lastMode = st.mode;
-  bool firstFrame = (lastMode != st.mode);
-
+void Display::drawSetTemp(SystemState::State st, bool firstFrame) {
+  static uint16_t lastTempTarget = st.tempTarget;
+  static uint16_t lastTempCurrent = st.currentTemp;
 
   if (firstFrame) {
+    if (st.mode == SystemState::Modes::SET_TEMP) {
+      drawTitle(&_tft, "::SET TEMP::");
+    } else if (st.mode == SystemState::Modes::HEATING) {
+      drawTitle(&_tft, "::HEATING::");
+    }
+  }
+
+  if (st.tempTarget != lastTempTarget || firstFrame) {
+
+    if (st.mode == SystemState::Modes::SET_TEMP) {
+      _tft.setTextColor(TFT_CYAN, TFT_BLACK);
+    } else if (st.mode == SystemState::Modes::HEATING) {
+      _tft.setTextColor(_tft.color565(80, 50, 50), TFT_BLACK);
+    }
+
+    _tft.setTextFont(1);
+    _tft.setTextSize(2);
+    _tft.setCursor(0, 120);
+    _tft.printf("Target:");
+
+    _tft.setTextFont(7);
+    _tft.setTextSize(1);
+    _tft.setCursor(80, 120);
+    _tft.printf("%03d", st.tempTarget);
+  }
+
+  if (st.currentTemp != lastTempCurrent || firstFrame) {
+    if (st.mode == SystemState::Modes::SET_TEMP) {
+      _tft.setTextColor(_tft.color565(50, 50, 50), TFT_BLACK);
+    } else if (st.mode == SystemState::Modes::HEATING) {
+      _tft.setTextColor(TFT_RED, TFT_BLACK);
+    }
+
+    _tft.setTextFont(1);
+    _tft.setTextSize(2);
+    _tft.setCursor(0, 60);
+    _tft.printf("Temp:");
+
+    _tft.setTextFont(7);
+    _tft.setTextSize(1);
+    _tft.setCursor(80, 60);
+    _tft.printf("%04d", st.currentTemp);
+  }
+}
+
+void Display::update(SystemState::State st, bool modeChanged) {
+  if (modeChanged) {
     _tft.fillScreen(TFT_BLACK);
-    Serial.printf("Mode changed: %d -> %d\n", static_cast<int>(lastMode), static_cast<int>(st.mode));
-    lastMode = st.mode;
   }
 
   switch (st.mode) {
@@ -177,10 +215,14 @@ void Display::update(SystemState::State st) {
       Display::drawSplash();
       break;
     case SystemState::Modes::MENU:
-      Display::drawMenu(st, firstFrame);
+      Display::drawMenu(st, modeChanged);
       break;
     case SystemState::Modes::PROFILE_SELECTION:
-      Display::drawProfileSelection(st, firstFrame);
+      Display::drawProfileSelection(st, modeChanged);
+      break;
+    case SystemState::Modes::SET_TEMP:
+    case SystemState::Modes::HEATING:
+      Display::drawSetTemp(st, modeChanged);
       break;
   }
 }

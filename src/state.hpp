@@ -43,7 +43,7 @@ namespace SystemState {
   enum class Modes {
     STARTUP, //shows splash screen, then moves to menu
     MENU, // Shows operation modes options like "Select profile" "PID tuning" "Run profile" "Set Temperature"
-    TEMP_SETTING, // Set target temperature, show controls Up Down, start, back to menu
+    SET_TEMP, // Set target temperature, show controls Up Down, start, back to menu
     PID_TUNING,
     PROFILE_SELECTION,
     PROFILE_RUNNING,
@@ -72,8 +72,8 @@ namespace SystemState {
     float ki{ 0.0f };
     float kd{ 0.0f };
 
-    uint16_t tempCurrent{ 0 };
-    uint16_t tempTarget{ 0 };
+    uint16_t currentTemp{ 0 };
+    uint16_t tempTarget{ 220 };
 
 
     Profiles::Profile* currentProfile{ nullptr };

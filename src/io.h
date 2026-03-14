@@ -8,8 +8,8 @@
 #define BTN_C 10
 #define BTN_D 9
 
-#define FAN_PIN 12
-#define HEATER_PIN 11
+#define FAN_PIN 20
+#define HEATER_PIN 21
 
 #define I2C_SDA 2
 #define I2C_SCL 3
@@ -30,6 +30,8 @@ namespace IO {
 
   void init();
   void update();
+  void _updatePid();
+  void setTargetTemp(uint16_t temp);
 
   btnState getButtonState();
 
@@ -37,6 +39,7 @@ namespace IO {
 
   uint16_t getTemp();
 
+  void safeMode();
   void fanOn();
   void fanOff();
 

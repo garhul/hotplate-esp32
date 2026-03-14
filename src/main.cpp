@@ -17,5 +17,5 @@ void setup() {
 
 void loop() {
   Controller::update();
-  delay(10);
+  yield();
 }

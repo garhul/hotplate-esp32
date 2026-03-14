@@ -30,11 +30,17 @@ namespace Display {
 
 
   void init();
-  void update(SystemState::State  st);
+  void update(SystemState::State  st, bool modeChanged);
 
   void drawSplash();
   void drawMenu(SystemState::State st, bool firstFrame);
   void drawProfileSelection(SystemState::State st, bool firstFrame);
+
+  /** Set heating temp,  */
+  void drawSetTemp(SystemState::State st, bool firstFrame);
+  // void drawHeating(SystemState::State st, bool firstFrame);
+
+
   // void drawCurrentCycle(State& st);
   // void drawPIDCalibration(State& st);
 
